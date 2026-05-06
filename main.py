@@ -4,7 +4,6 @@ from twilio.rest import Client
 
 account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
-twilio_recovery_code = os.environ.get("TWILIO_RECOVERY_CODE")
 
 weather_endpoint= "https://api.openweathermap.org/data/2.5/forecast"
 geocoding_endpoint= "http://api.openweathermap.org/geo/1.0/direct"
