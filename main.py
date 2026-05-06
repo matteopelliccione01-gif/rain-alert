@@ -9,11 +9,6 @@ weather_endpoint= "https://api.openweathermap.org/data/2.5/forecast"
 geocoding_endpoint= "http://api.openweathermap.org/geo/1.0/direct"
 api_key = os.environ.get("OWM_API_KEY")
 
-print(account_sid)
-print(auth_token)
-print(twilio_recovery_code)
-print(api_key)
-
 geocoding_params= {
     "appid": api_key,
     "q": os.environ.get("MY_CITY"),
