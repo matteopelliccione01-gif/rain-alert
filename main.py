@@ -51,13 +51,16 @@ for forecast in weather_data['list']:
 
 if will_rain:
     print("umbrella")
-    client = Client(account_sid, auth_token)
-    message = client.messages.create(
-        content_sid=os.environ.get("CONTENT_SID"),
-        body='It is going to rain!\n\n'
-             f'{summary_str}\n'
-             'Bring your umbrella.☔',
-        from_=os.environ.get("FROM"),
-        to=os.environ.get("TO")
-    )
-    print(message.sid)
+    try:
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            content_sid=os.environ.get("CONTENT_SID"),
+            body='It is going to rain!\n\n'
+                 f'{summary_str}\n'
+                 'Bring your umbrella.☔',
+            from_=os.environ.get("FROM"),
+            to=os.environ.get("TO")
+        )
+        print(message.sid)
+    except Exception:
+        pass
