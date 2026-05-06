@@ -62,5 +62,5 @@ if will_rain:
             to=os.environ.get("TO")
         )
         print(message.sid)
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
