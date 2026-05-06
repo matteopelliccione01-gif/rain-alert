@@ -48,6 +48,7 @@ for forecast in weather_data['list']:
         will_rain = True
 
     summary_str += f"{date_time}: {forecast['weather'][0]['description']}\n"
+print(summary_str)
 
 if will_rain:
     print("umbrella")
