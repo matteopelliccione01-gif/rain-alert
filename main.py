@@ -1,38 +1,69 @@
-# To run and test the code you need to update 4 places:
-# 1. Change MY_EMAIL/MY_PASSWORD to your own details.
-# 2. Go to your email provider and make it allow less secure apps.
-# 3. Update the SMTP ADDRESS to match your email provider.
-# 4. Update birthdays.csv to contain today's month and day.
-# See the solution video in the 100 Days of Python Course for explainations.
-
-
-from datetime import datetime
-import pandas
-import random
-import smtplib
+import requests
 import os
+from twilio.rest import Client
 
-# import os and use it to get the Github repository secrets
-MY_EMAIL = os.environ.get("MY_EMAIL")
-MY_PASSWORD = os.environ.get("MY_PASSWORD")
+account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
+auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
+twilio_recovery_code = os.environ.get("TWILIO_RECOVERY_CODE")
 
-today = datetime.now()
-today_tuple = (today.month, today.day)
+weather_endpoint= "https://api.openweathermap.org/data/2.5/forecast"
+geocoding_endpoint= "http://api.openweathermap.org/geo/1.0/direct"
+api_key = os.environ.get("OWM_API_KEY")
 
-data = pandas.read_csv("birthdays.csv")
-birthdays_dict = {(data_row["month"], data_row["day"])                  : data_row for (index, data_row) in data.iterrows()}
-if today_tuple in birthdays_dict:
-    birthday_person = birthdays_dict[today_tuple]
-    file_path = f"letter_templates/letter_{random.randint(1, 3)}.txt"
-    with open(file_path) as letter_file:
-        contents = letter_file.read()
-        contents = contents.replace("[NAME]", birthday_person["name"])
+print(account_sid)
+print(auth_token)
+print(twilio_recovery_code)
+print(api_key)
 
-    with smtplib.SMTP("YOUR EMAIL PROVIDER SMTP SERVER ADDRESS") as connection:
-        connection.starttls()
-        connection.login(MY_EMAIL, MY_PASSWORD)
-        connection.sendmail(
-            from_addr=MY_EMAIL,
-            to_addrs=birthday_person["email"],
-            msg=f"Subject:Happy Birthday!\n\n{contents}"
-        )
+geocoding_params= {
+    "appid": api_key,
+    "q": os.environ.get("MY_CITY"),
+}
+
+geocoding_data = requests.get(geocoding_endpoint,
+                              params= geocoding_params)
+geocoding_data.raise_for_status()
+geocoding_data = geocoding_data.json()
+
+
+weather_params = {
+    "lat": geocoding_data[0]["lat"],
+    "lon": geocoding_data[0]["lon"],
+    "cnt": 4,
+    "appid": api_key
+}
+
+weather_data = requests.get(weather_endpoint, params= weather_params)
+weather_data.raise_for_status()
+weather_data = weather_data.json()
+
+print(f"http code: {weather_data['cod']}")
+will_rain = False
+summary_str = ''
+for forecast in weather_data['list']:
+    date_time = forecast['dt_txt'].split('-')
+    if '00:00:00' in date_time[2]:
+        print('')
+    date_time = date_time[1] + '-' + date_time[2]
+    date_time = date_time.split(':')
+    date_time = date_time[0]
+
+    weather_id = forecast['weather'][0]['id']
+
+    if weather_id < 700:
+        will_rain = True
+
+    summary_str += f"{date_time}: {forecast['weather'][0]['description']}\n"
+
+if will_rain:
+    print("umbrella")
+    client = Client(account_sid, auth_token)
+    message = client.messages.create(
+        content_sid=os.environ.get("CONTENT_SID"),
+        body='It is going to rain!\n\n'
+             f'{summary_str}\n'
+             'Bring your umbrella.☔',
+        from_=os.environ.get("FROM"),
+        to=os.environ.get("TO")
+    )
+    print(message.sid)
