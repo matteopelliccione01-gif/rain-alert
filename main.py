@@ -55,7 +55,6 @@ if will_rain:
     try:
         client = Client(account_sid, auth_token)
         message = client.messages.create(
-            content_sid=os.environ.get("CONTENT_SID"),
             body='It is going to rain!\n\n'
                  f'{summary_str}\n'
                  'Bring your umbrella.☔',
